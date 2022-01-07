@@ -8,12 +8,11 @@
 import pandas as pd
 import numpy as np
 import requests
-import seaborn as sns
 import matplotlib.pyplot as plt
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 from matplotlib.cbook import get_sample_data
 from PIL import Image, ImageChops
-import requests
+from datetime import date
 from io import BytesIO
 from nba_api.stats.endpoints._base import Endpoint
 from nba_api.stats.library.http import NBAStatsHTTP
@@ -490,7 +489,7 @@ for i,id in enumerate(All_Player_Info['PERSON_ID']):
     ab = AnnotationBbox(img, (All_Player_Info['FG3_PCT'].iat[i],All_Player_Info['D_FG_PCT'].iat[i]))
     ax.add_artist(ab)
 
-
+plt.savefig('3&D Players' + str(date.today()) + '.png')
 # In[ ]:
 
 
