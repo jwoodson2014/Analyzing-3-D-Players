@@ -1,7 +1,6 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
+#Name: Jason Woodson
+#Date: 12/27/2021
+#Purpose: Plotting the 3P% against DFG% for players between 6'4-6'9 who have a spot up rate that is in the 25th percentile or higher and have played in a total number of games that is in the 25th percentile or higher
 
 
 #import applicable modules
