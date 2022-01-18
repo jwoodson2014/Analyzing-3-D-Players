@@ -1,6 +1,7 @@
 #Name: Jason Woodson
 #Date: 12/27/2021
-#Purpose: Plotting the 3P% against DFG% for players between 6'4-6'9 who have a spot up rate that is in the 25th percentile or higher and have played in a total number of games that is in the 25th percentile or higher
+#Purpose: Plotting the 3P% against DFG DIFF% for players between 6'4-6'9 who have a spot up rate that is in the 25th percentile or higher and have played in a total number of games that is in the 25th percentile or higher
+
 
 
 #import applicable modules
@@ -21,7 +22,6 @@ from nba_api.stats.library.parameters import DefenseCategory, LeagueID, PerModeS
 from nba_api.stats.library.parameters import LeagueID, PerModeSimple, PlayerOrTeamAbbreviation, SeasonTypeAllStar, Season, PlayTypeNullable, TypeGroupingNullable
 
 
-# In[2]:
 
 
 #scrape information from nba.com for general info on all NBA players both current and past(Team, Height, Age, etc.)
@@ -52,25 +52,17 @@ All_Player_Info = pd.DataFrame(data_set, columns=headers)
 print('Information retreived successfully!')
 
 
-# In[3]:
-
-
 #filter the information for players that play in the current season
 All_Player_Info = All_Player_Info[All_Player_Info['TO_YEAR']=='2021'].reset_index(drop=True)
+
 
 #create a list of player heights for which we want to include in our analysis
 Player_Heights = ['6-4','6-5','6-6','6-7','6-8','6-9']
 Get_Heights = All_Player_Info['HEIGHT'].isin(Player_Heights)
 
 
-# In[4]:
-
-
 #filter the df for players matching those heights
 All_Player_Info = All_Player_Info[Get_Heights]
-
-
-# In[5]:
 
 
 #Using the nba_api, get information regarding spot up shooting rates for the current season
@@ -128,22 +120,13 @@ class SynergyPlayTypes(Endpoint):
         self.synergy_play_type = Endpoint.DataSet(data=data_sets['SynergyPlayType'])
 
 
-# In[6]:
 
 
 print('Getting play type information.....')
 Spot_Up_Rate = SynergyPlayTypes().get_data_frames()[0]
-
-
-# In[7]:
-
-
 column_map = {'PLAYER_ID':'PERSON_ID'}
 Spot_Up_Rate = Spot_Up_Rate.rename(columns=column_map)
 print('Information retreived successfully!')
-
-
-# In[8]:
 
 
 #Using the nba_api, get information regarding traditional stats for the current season
@@ -258,22 +241,10 @@ class LeagueDashPlayerStats(Endpoint):
         self.data_sets = [Endpoint.DataSet(data=data_set) for data_set_name, data_set in data_sets.items()]
         self.league_dash_player_stats = Endpoint.DataSet(data=data_sets['LeagueDashPlayerStats'])
 
-
-# In[9]:
-
-
 print('Getting traditional stats information.....')
 Player_Stats_Trad = LeagueDashPlayerStats().get_data_frames()[0]
-
-
-# In[10]:
-
-
 Player_Stats_Trad = Player_Stats_Trad.rename(columns=column_map)
 print('Information retreived successfully!')
-
-
-# In[11]:
 
 
 #Using the nba_api, get information regarding opponent defensive metrics for the current season
@@ -378,41 +349,18 @@ class LeagueDashPtDefend(Endpoint):
         self.data_sets = [Endpoint.DataSet(data=data_set) for data_set_name, data_set in data_sets.items()]
         self.league_dash_p_tdefend = Endpoint.DataSet(data=data_sets['LeagueDashPTDefend'])
 
-
-# In[12]:
-
-
 print('Getting defensive stats information.....')
 Player_Stats_Def = LeagueDashPtDefend().get_data_frames()[0]
-
-
-# In[13]:
-
-
 Player_Stats_Def = Player_Stats_Def.rename(columns={'CLOSE_DEF_PERSON_ID':'PERSON_ID'})
 print('Information retreived successfully!')
-
-
-# In[14]:
 
 
 #merge the dfs into on on person_id from the All_Player_Info df
 All_Player_Info = pd.merge(All_Player_Info,Spot_Up_Rate,on='PERSON_ID',how='left')
 
-
-# In[15]:
-
-
 All_Player_Info = pd.merge(All_Player_Info,Player_Stats_Trad,on='PERSON_ID',how='left')
 
-
-# In[16]:
-
-
 All_Player_Info = pd.merge(All_Player_Info,Player_Stats_Def,on='PERSON_ID',how='left')
-
-
-# In[17]:
 
 
 #remove rows of the df where percentile is NA
@@ -420,76 +368,40 @@ All_Player_Info = pd.merge(All_Player_Info,Player_Stats_Def,on='PERSON_ID',how='
 All_Player_Info = All_Player_Info[All_Player_Info['PERCENTILE'].notna()]
 
 
-# In[18]:
-
-
 #establish thresholds for players we want to deem "3 & D Players"
     #>25% quartile for percentage of possession that result in a spot up shot
     #>25% quartile for games played
 min_quantile = All_Player_Info['POSS_PCT'].quantile(.25)
-min_quantile
-
-
-# In[19]:
-
-
+print(f'Players included have a minimum spot up rate of {min_quantile}')
 min_games = All_Player_Info['GP'].quantile(.25)
-min_games
-
-
-# In[20]:
+print(f'Players included have played in at least {min_games} games')
 
 
 #filter the df based on the treshold values established above
 All_Player_Info = All_Player_Info[(All_Player_Info['POSS_PCT']>min_quantile) & (All_Player_Info['GP']>min_games)]
 
 
-# In[21]:
-
-
-#scrape headshots from NBA.com for every player that met the minimum threshold levels
-print('Grabbing headshots from NBA.com......')
-for id in All_Player_Info['PERSON_ID']:
-    url = ('https://cdn.nba.com/headshots/nba/latest/1040x760/'+str(id)+'.png')
-    response = requests.get(url)
-    img = Image.open(BytesIO(response.content))
-    bg = Image.new(img.mode, img.size, img.getpixel((0,0)))
-    diff = ImageChops.difference(img, bg)
-    diff = ImageChops.add(diff, diff, 2.0, -100)
-    bbox = diff.getbbox()
-    img = img.crop(bbox)
-    img = img.resize((100,100))
-    img.save('Pictures/'+str(id)+'.png')
-print('Headshots saved successfully!')
-
-
-# In[23]:
-
-
 #plot the data for 3 & D Players
-fig, ax = plt.subplots(figsize=(50,50))
+plt.style.use('fivethirtyeight')
+fig, ax = plt.subplots(figsize=(20,15))
 x = All_Player_Info['FG3_PCT']
-y = All_Player_Info['D_FG_PCT']
+y = All_Player_Info['PCT_PLUSMINUS']
 ax.scatter(x,y)
 plt.axvline(x=np.median(list(ax.get_xlim())),linestyle='--',color='black')
 plt.axhline(y=np.median(list(ax.get_ylim())),linestyle='--',color='black')
-plt.xlabel('3 Point %',size=50)
-plt.ylabel('Defended FG %',size=50)
-plt.title("Tracking NBA's 3 & D Players",size=75)
-plt.xticks(size=30)
-plt.yticks(size=30)
-plt.style.use('Solarize_Light2')
+plt.xlabel('3 Point %',size=10)
+plt.ylabel('Defended FG Diff %',size=10)
+plt.title("Tracking NBA's 3 & D Players",size=30)
+plt.xticks(size=10)
+plt.yticks(size=10)
+
 
 #For each point plot the approporiate headshot of the player
-for i,id in enumerate(All_Player_Info['PERSON_ID']):
+for i, name in enumerate(All_Player_Info['PLAYER_SLUG']):
+        
+    plt.annotate(name, (All_Player_Info['FG3_PCT'].iat[i]+.001,All_Player_Info['PCT_PLUSMINUS'].iat[i]))
     
-    img = OffsetImage(plt.imread(r'Pictures/'+str(id)+'.png'))
-    
-    ab = AnnotationBbox(img, (All_Player_Info['FG3_PCT'].iat[i],All_Player_Info['D_FG_PCT'].iat[i]))
-    ax.add_artist(ab)
-
 plt.savefig('3&D Players' + str(date.today()) + '.png')
-# In[ ]:
 
 
 
