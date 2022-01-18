@@ -4,7 +4,7 @@
   - Criteria
     -   Height between 6'4-6'9   
     -   Min 25th percentile in spot up rate and games played
-  - Statistics uses
+  - Statistics
     -   3-point percentage
     -   Defended field goal percentage differencw
         -   The difference in average FG% of shooters and the FG% when guarded by the player   
