@@ -383,24 +383,25 @@ All_Player_Info = All_Player_Info[(All_Player_Info['POSS_PCT']>min_quantile) & (
 
 #plot the data for 3 & D Players
 plt.style.use('fivethirtyeight')
-fig, ax = plt.subplots(figsize=(20,15))
+fig, ax = plt.subplots(figsize=(30,25))
 x = All_Player_Info['FG3_PCT']
 y = All_Player_Info['PCT_PLUSMINUS']
-ax.scatter(x,y)
+ax.scatter(x,y,s=All_Player_Info['FG3A']*10,c=All_Player_Info['FG3A'])
 plt.axvline(x=np.median(list(ax.get_xlim())),linestyle='--',color='black')
 plt.axhline(y=np.median(list(ax.get_ylim())),linestyle='--',color='black')
-plt.xlabel('3 Point %',size=10)
-plt.ylabel('Defended FG Diff %',size=10)
-plt.title("Tracking NBA's 3 & D Players",size=30)
-plt.xticks(size=10)
-plt.yticks(size=10)
+plt.xlabel('3 Point %',size=20)
+plt.ylabel('Defended FG Diff %',size=20)
+plt.title("Tracking NBA's 3 & D Players",size=40)
+plt.xticks(size=20)
+plt.yticks(size=20)
 
 
-#For each point plot the approporiate headshot of the player
+#for each point plot the approporiate headshot of the player
 for i, name in enumerate(All_Player_Info['PLAYER_SLUG']):
         
-    plt.annotate(name, (All_Player_Info['FG3_PCT'].iat[i]+.001,All_Player_Info['PCT_PLUSMINUS'].iat[i]))
-    
+    plt.annotate(name, (All_Player_Info['FG3_PCT'].iat[i]+.003,All_Player_Info['PCT_PLUSMINUS'].iat[i]))
+
+#save the plot    
 plt.savefig('3&D Players' + str(date.today()) + '.png')
 
 
