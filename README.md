@@ -6,5 +6,5 @@
     -   Min 25th percentile in spot up rate and games played
   - Statistics
     -   3-point percentage
-    -   Defended field goal percentage differencw
+    -   Defended field goal percentage difference
         -   The difference in average FG% of shooters and the FG% when guarded by the player   
